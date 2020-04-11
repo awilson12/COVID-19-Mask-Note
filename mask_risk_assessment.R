@@ -88,6 +88,9 @@ COVIDmask<-function(material=c("100% cotton","scarf","tea towel","pillowcase","a
 require(ggplot2)
 require(ggpubr)
 
+#----- there's a much more efficient way to do this, but for now here's something that works
+#we can update w/ loop later if we want :)
+
 #scarf - 30 seconds and 15 minute exposure scenarios
 COVIDmask(material="scarf",exposureduration=.5)
 all.scarf.05<-all
@@ -100,10 +103,70 @@ all.linen.05<-all
 COVIDmask(material="linen",exposureduration=15)
 all.linen.15<-all
 
+#t shirt
+COVIDmask(material="100% cotton T-shirt",exposureduration=.5)
+all.tshirt.05<-all
+COVIDmask(material="100% cotton T-shirt",exposureduration=15)
+all.tshirt.15<-all
+
+#cotton mix
+COVIDmask(material="cotton mix",exposureduration=.5)
+all.cottonmix.05<-all
+COVIDmask(material="cotton mix",exposureduration=15)
+all.cottonmix.15<-all
+
+#antimicrobial pillowcase
+COVIDmask(material="antimicrobial pillowcase",exposureduration=.5)
+all.antimicrobepillowcase.05<-all
+COVIDmask(material="antimicrobial pillowcase",exposureduration=15)
+all.antimicrobepillowcase.15<-all
+
+#pillowcase
+COVIDmask(material="pillowcase",exposureduration=.5)
+all.pillowcase.05<-all
+COVIDmask(material="pillowcase",exposureduration=15)
+all.pillowcase.15<-all
+
+#vacuum cleaner bag
+COVIDmask(material="vacuum cleaner bag",exposureduration=.5)
+all.vacuum.05<-all
+COVIDmask(material="vacuum cleaner bag",exposureduration=15)
+all.vacuum.15<-all
+
+#surgical mask
+COVIDmask(material="surgical mask",exposureduration=.5)
+all.surgicalmask.05<-all
+COVIDmask(material="surgical mask",exposureduration=15)
+all.surgicalmask.15<-all
+
+#tea towel
+COVIDmask(material="tea towel",exposureduration=.5)
+all.teatowel.05<-all
+COVIDmask(material="tea towel",exposureduration=15)
+all.teatowel.15<-all
+
+#silk
+COVIDmask(material="silk",exposureduration=.5)
+all.silk.05<-all
+COVIDmask(material="silk",exposureduration=15)
+all.silk.15<-all
+
+
 #bind all scenarios into single data frame
-all.materials<-rbind(all.scarf.05,all.scarf.15,all.linen.05,all.linen.15)
+all.materials<-rbind(all.scarf.05,all.scarf.15,
+                     all.linen.05,all.linen.15,
+                     all.tshirt.05,all.tshirt.15,
+                     all.cottonmix.05,all.cottonmix.15,
+                     all.antimicrobepillowcase.05,all.antimicrobepillowcase.15,
+                     all.pillowcase.05,all.pillowcase.15,
+                     all.vacuum.05,all.vacuum.15,
+                     all.surgicalmask.05,all.surgicalmask.15,
+                     all.teatowel.05,all.teatowel.15,
+                     all.silk.05,all.silk.15
+                     )
 
 #plot
+windows()
 ggplot(all.materials)+
   geom_violin(aes(x=materialtype,y=infect,fill=materialtype),colour="black",draw_quantiles = c(.25,.5,.75))+
   #geom_jitter(aes(x=materialtype,y=infect),width=.1,alpha=.3)+
@@ -111,4 +174,5 @@ ggplot(all.materials)+
   scale_x_discrete(name="")+
   scale_y_continuous(name="Infection Risk")+
   theme(legend.position = "none")+
+  coord_flip()+
   facet_wrap(~duration)
