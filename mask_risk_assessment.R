@@ -1,6 +1,6 @@
 
 #functio requires definition of material type and exposure duration in minutes
-COVIDmask<-function(material=c("100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
+COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
                                "surgical mask","vacuum cleaner bag","cotton mix","linen","silk"),exposureduration){
   
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -59,8 +59,10 @@ COVIDmask<-function(material=c("100% cotton","scarf","tea towel","pillowcase","a
   }else if (material=="linen"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6167,sd=.0241)
     
-  }else{ #silk
+  }else if (material=="silk"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5432,sd=.2949)
+  }else{
+    reduce<-rep(0,looplength)
   }
   
   dose.1<-conc.1*inhalation*exposureduration*(1-reduce)
@@ -151,6 +153,12 @@ all.silk.05<-all
 COVIDmask(material="silk",exposureduration=15)
 all.silk.15<-all
 
+#none
+COVIDmask(material="none",exposureduration=.5)
+all.none.05<-all
+COVIDmask(material="none",exposureduration=15)
+all.none.15<-all
+
 
 #bind all scenarios into single data frame
 all.materials<-rbind(all.scarf.05,all.scarf.15,
@@ -162,7 +170,8 @@ all.materials<-rbind(all.scarf.05,all.scarf.15,
                      all.vacuum.05,all.vacuum.15,
                      all.surgicalmask.05,all.surgicalmask.15,
                      all.teatowel.05,all.teatowel.15,
-                     all.silk.05,all.silk.15
+                     all.silk.05,all.silk.15,
+                     all.none.05,all.none.15
                      )
 
 #plot
