@@ -1,12 +1,16 @@
 
+rm(list = ls())
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+#read in bootstrapped values for dose-response
+exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
+
 #functio requires definition of material type and exposure duration in minutes
 COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
-                               "surgical mask","vacuum cleaner bag","cotton mix","linen","silk"),exposureduration){
-  
-  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-  
-  #read in bootstrapped values for dose-response
-  exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
+                               "surgical mask","vacuum cleaner bag","cotton mix","linen","silk"),
+                    exposureduration,
+                    RNAinfective){
   
   require(gsl)
   require(truncdist)
@@ -21,10 +25,10 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
   inhalation<-rep(NA,looplength)
   
   #1-4 micron (RNA/m^3)
-  conc.1<-runif(looplength,min=916,max=1384)
+  conc.1<-runif(looplength,min=916,max=1384)*RNAinfective
   
   #>4 micron (RNA/m^3)
-  conc.2<-runif(looplength,min=927,max=2000)
+  conc.2<-runif(looplength,min=927,max=2000)*RNAinfective
   
   #inhalation (original values in m^3/day... converted to per minute)
   inhalation<-runif(looplength,min=5.92,max=28.81)/(24*30) #minimum= (5th percentile), max (99th percentile)
@@ -74,114 +78,117 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
     infect[i]<-1-hyperg_1F1(exactbp$alpha[pair], exactbp$alpha[pair]+exactbp$Beta[pair], -dose[i], give=FALSE, strict=TRUE)
   }
   
-  all<<-data.frame(
+  all.param<<-data.frame(
     conc=c(conc.1+conc.2),
     reduce=reduce,
     dose=dose,
     infect=infect,
     inhalation=inhalation,
     duration=as.character(rep(exposureduration,looplength)),
-    materialtype=material
+    materialtype=material,
+    RNAinfect=rep(RNAinfective,looplength)
   )
-  
+
 }
 
 #--------------- running sim and plotting -----------------------------------------
 require(ggplot2)
 require(ggpubr)
 
-#----- there's a much more efficient way to do this, but for now here's something that works
-#we can update w/ loop later if we want :)
+durationandRNA<-function(exposureduration,RNAinfective){
+  #scarf - 30 seconds and 15 minute exposure scenarios
+  COVIDmask(material="scarf",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.scarf<-all.param
 
-#scarf - 30 seconds and 15 minute exposure scenarios
-COVIDmask(material="scarf",exposureduration=.5)
-all.scarf.05<-all
-COVIDmask(material="scarf",exposureduration=15)
-all.scarf.15<-all
+  #linen - 30 seconds and 15 minute exposure scenarios
+  COVIDmask(material="linen",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.linen<-all.param
+  
+  #t shirt
+  COVIDmask(material="100% cotton T-shirt",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.tshirt<-all.param
+  
+  #cotton mix
+  COVIDmask(material="cotton mix",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.cottonmix<-all.param
+  
+  #antimicrobial pillowcase
+  COVIDmask(material="antimicrobial pillowcase",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.antimicrobepillowcase<-all.param
+  
+  #pillowcase
+  COVIDmask(material="pillowcase",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.pillowcase<-all.param
 
-#linen - 30 seconds and 15 minute exposure scenarios
-COVIDmask(material="linen",exposureduration=.5)
-all.linen.05<-all
-COVIDmask(material="linen",exposureduration=15)
-all.linen.15<-all
+  #vacuum cleaner bag
+  COVIDmask(material="vacuum cleaner bag",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.vacuum<-all.param
+  
+  #surgical mask
+  COVIDmask(material="surgical mask",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.surgicalmask<-all.param
 
-#t shirt
-COVIDmask(material="100% cotton T-shirt",exposureduration=.5)
-all.tshirt.05<-all
-COVIDmask(material="100% cotton T-shirt",exposureduration=15)
-all.tshirt.15<-all
-
-#cotton mix
-COVIDmask(material="cotton mix",exposureduration=.5)
-all.cottonmix.05<-all
-COVIDmask(material="cotton mix",exposureduration=15)
-all.cottonmix.15<-all
-
-#antimicrobial pillowcase
-COVIDmask(material="antimicrobial pillowcase",exposureduration=.5)
-all.antimicrobepillowcase.05<-all
-COVIDmask(material="antimicrobial pillowcase",exposureduration=15)
-all.antimicrobepillowcase.15<-all
-
-#pillowcase
-COVIDmask(material="pillowcase",exposureduration=.5)
-all.pillowcase.05<-all
-COVIDmask(material="pillowcase",exposureduration=15)
-all.pillowcase.15<-all
-
-#vacuum cleaner bag
-COVIDmask(material="vacuum cleaner bag",exposureduration=.5)
-all.vacuum.05<-all
-COVIDmask(material="vacuum cleaner bag",exposureduration=15)
-all.vacuum.15<-all
-
-#surgical mask
-COVIDmask(material="surgical mask",exposureduration=.5)
-all.surgicalmask.05<-all
-COVIDmask(material="surgical mask",exposureduration=15)
-all.surgicalmask.15<-all
-
-#tea towel
-COVIDmask(material="tea towel",exposureduration=.5)
-all.teatowel.05<-all
-COVIDmask(material="tea towel",exposureduration=15)
-all.teatowel.15<-all
-
-#silk
-COVIDmask(material="silk",exposureduration=.5)
-all.silk.05<-all
-COVIDmask(material="silk",exposureduration=15)
-all.silk.15<-all
-
-#none
-COVIDmask(material="none",exposureduration=.5)
-all.none.05<-all
-COVIDmask(material="none",exposureduration=15)
-all.none.15<-all
+  #tea towel
+  COVIDmask(material="tea towel",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.teatowel<-all.param
+  
+  #silk
+  COVIDmask(material="silk",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.silk<-all.param
+  
+  #none
+  COVIDmask(material="none",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.none<-all.param
+  
+  #bind all scenarios into single data frame
+  all.materials<<-rbind(all.scarf,
+                       all.linen,
+                       all.tshirt,
+                       all.cottonmix,
+                       all.antimicrobepillowcase,
+                       all.pillowcase,
+                       all.vacuum,
+                       all.surgicalmask,
+                       all.teatowel,
+                       all.silk,
+                       all.none
+  )
+  
+}
 
 
-#bind all scenarios into single data frame
-all.materials<-rbind(all.scarf.05,all.scarf.15,
-                     all.linen.05,all.linen.15,
-                     all.tshirt.05,all.tshirt.15,
-                     all.cottonmix.05,all.cottonmix.15,
-                     all.antimicrobepillowcase.05,all.antimicrobepillowcase.15,
-                     all.pillowcase.05,all.pillowcase.15,
-                     all.vacuum.05,all.vacuum.15,
-                     all.surgicalmask.05,all.surgicalmask.15,
-                     all.teatowel.05,all.teatowel.15,
-                     all.silk.05,all.silk.15,
-                     all.none.05,all.none.15
-                     )
+exposuretimes<-c(.5,15)
+RNAinfect<-c(.001,.01,.1)
+for (i in 1:length(exposuretimes)){
+  for (j in 1:length(RNAinfect)){
+    durationandRNA(exposureduration=exposuretimes[i],RNAinfective=RNAinfect[j])
+    if (j==1 & i==1){
+      all.materials.total<-all.materials 
+    }else{
+      all.materials.total<-rbind(all.materials,all.materials.total)
+    }
+  }
+}
+
+
+#Update for labeling purposes
+all.materials.total$duration<-as.character(all.materials.total$duration)
+all.materials.total$duration[all.materials.total$duration==.5]<-"30 Seconds"
+all.materials.total$duration[all.materials.total$duration==15]<-"15 Minutes"
+
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.001]<-"0.1% Infective"
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.01]<-"1% Infective"
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.1]<-"10% Infective"
+
 
 #plot
 windows()
-ggplot(all.materials)+
+ggplot(all.materials.total)+
   geom_violin(aes(x=materialtype,y=infect,fill=materialtype),colour="black",draw_quantiles = c(.25,.5,.75))+
   #geom_jitter(aes(x=materialtype,y=infect),width=.1,alpha=.3)+
   theme_pubr()+
   scale_x_discrete(name="")+
-  scale_y_continuous(name="Infection Risk")+
+  scale_y_continuous(name="Infection Risk",trans="log10")+
   theme(legend.position = "none")+
   coord_flip()+
-  facet_wrap(~duration)
+  facet_wrap(RNAinfect~duration,ncol=2)
