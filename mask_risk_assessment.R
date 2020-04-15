@@ -216,3 +216,5 @@ for (i in 1:length(materials)){
   matrix.reduce[1,i]<-(none.mean.20min-material.20min)/none.mean.20min*100
   matrix.reduce[2,i]<-(none.mean.30sec-material.30sec)/none.mean.30sec*100
 }
+
+View(matrix.reduce)
