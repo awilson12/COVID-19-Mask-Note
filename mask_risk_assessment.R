@@ -157,7 +157,7 @@ durationandRNA<-function(exposureduration,RNAinfective){
 }
 
 
-exposuretimes<-c(.5,15)
+exposuretimes<-c(.5,20)
 RNAinfect<-c(.001,.01,.1)
 for (i in 1:length(exposuretimes)){
   for (j in 1:length(RNAinfect)){
@@ -174,14 +174,14 @@ for (i in 1:length(exposuretimes)){
 #Update for labeling purposes
 all.materials.total$duration<-as.character(all.materials.total$duration)
 all.materials.total$duration[all.materials.total$duration==.5]<-"30 Seconds"
-all.materials.total$duration[all.materials.total$duration==15]<-"15 Minutes"
+all.materials.total$duration[all.materials.total$duration==20]<-"20 Minutes"
 
 all.materials.total$RNAinfect[all.materials.total$RNAinfect==.001]<-"0.1% Infective"
 all.materials.total$RNAinfect[all.materials.total$RNAinfect==.01]<-"1% Infective"
 all.materials.total$RNAinfect[all.materials.total$RNAinfect==.1]<-"10% Infective"
 
 
-#plot
+#figure 1 ----------------------------------------------------------------
 windows()
 ggplot(all.materials.total)+
   geom_violin(aes(x=materialtype,y=infect,fill=materialtype),colour="black",draw_quantiles = c(.25,.5,.75))+
@@ -192,3 +192,23 @@ ggplot(all.materials.total)+
   theme(legend.position = "none")+
   coord_flip()+
   facet_wrap(RNAinfect~duration,ncol=2)
+
+#summary statistics ----------------------------------------------------------------
+
+materials<-c("none","silk","tea towel","surgical mask","vacuum cleaner bag","pillowcase",
+             "antimicrobial pillowcase", "cotton mix", "100% cotton T-shirt","linen","scarf")
+
+none.mean.20min<-mean(all.materials.total$infect[all.materials.total$materialtype=="none" & all.materials.total$duration=="20 Minutes"])
+none.mean.30sec<-mean(all.materials.total$infect[all.materials.total$materialtype=="none" & all.materials.total$duration=="30 Seconds"])
+
+matrix.reduce<-matrix(ncol=length(materials),nrow=length(exposuretimes))
+colnames(matrix.reduce)<-materials
+rownames(matrix.reduce)<-c("20 Minutes","30 Seconds")
+
+for (i in 1:length(materials)){
+  material.20min<-mean(all.materials.total$infect[all.materials.total$materialtype==materials[i] & all.materials.total$duration=="20 Minutes"])
+  material.30sec<-mean(all.materials.total$infect[all.materials.total$materialtype==materials[i] & all.materials.total$duration=="30 Seconds"])
+  
+  matrix.reduce[1,i]<-(none.mean.20min-material.20min)/none.mean.20min*100
+  matrix.reduce[2,i]<-(none.mean.30sec-material.30sec)/none.mean.30sec*100
+}
