@@ -3,6 +3,9 @@
 #clear environemnt
 rm(list = ls())
 
+#set seed
+set.seed(34)
+
 #set working directory to location of this and other files
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
@@ -52,7 +55,7 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5713,sd=.1055)
     
   }else if (material=="antimicrobial pillowcase"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0764)
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0744)
     
   }else if (material=="surgical mask"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8952,sd=.0265)
@@ -195,7 +198,7 @@ ggplot(all.materials.total)+
   scale_y_continuous(name="Infection Risk",trans="log10")+
   theme(legend.position = "none")+
   coord_flip()+
-  facet_wrap(RNAinfect~duration,ncol=2)
+  facet_wrap(RNAinfect~duration,ncol=2,scales="free")
 
 #summary statistics ----------------------------------------------------------------
 
@@ -216,3 +219,5 @@ for (i in 1:length(materials)){
   matrix.reduce[1,i]<-(none.mean.20min-material.20min)/none.mean.20min*100
   matrix.reduce[2,i]<-(none.mean.30sec-material.30sec)/none.mean.30sec*100
 }
+
+View(matrix.reduce)
