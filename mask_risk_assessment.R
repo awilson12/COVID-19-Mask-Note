@@ -1,12 +1,15 @@
+#Code for estimating infection risks for different mask materials
 
+#clear environemnt
 rm(list = ls())
 
+#set working directory to location of this and other files
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 #read in bootstrapped values for dose-response
 exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
 
-#functio requires definition of material type and exposure duration in minutes
+#function requires definition of material type and exposure duration in minutes
 COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
                                "surgical mask","vacuum cleaner bag","cotton mix","linen","silk"),
                     exposureduration,
@@ -91,9 +94,7 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
 
 }
 
-#--------------- running sim and plotting -----------------------------------------
-require(ggplot2)
-require(ggpubr)
+#--------------- function for running simulation scenarios per material type -----------------------------------------
 
 durationandRNA<-function(exposureduration,RNAinfective){
   #scarf - 30 seconds and 15 minute exposure scenarios
@@ -157,6 +158,7 @@ durationandRNA<-function(exposureduration,RNAinfective){
 }
 
 
+#running simulations for different material types, exposure times, and % of RNA assumed to be infective-----------------------------------------
 exposuretimes<-c(.5,20)
 RNAinfect<-c(.001,.01,.1)
 for (i in 1:length(exposuretimes)){
@@ -181,11 +183,13 @@ all.materials.total$RNAinfect[all.materials.total$RNAinfect==.01]<-"1% Infective
 all.materials.total$RNAinfect[all.materials.total$RNAinfect==.1]<-"10% Infective"
 
 
-#figure 1 ----------------------------------------------------------------
+#figure 1 --------------------------------------------------------------------------------------------------------------------------------
+require(ggplot2)
+require(ggpubr)
+
 windows()
 ggplot(all.materials.total)+
   geom_violin(aes(x=materialtype,y=infect,fill=materialtype),colour="black",draw_quantiles = c(.25,.5,.75))+
-  #geom_jitter(aes(x=materialtype,y=infect),width=.1,alpha=.3)+
   theme_pubr()+
   scale_x_discrete(name="")+
   scale_y_continuous(name="Infection Risk",trans="log10")+
