@@ -198,7 +198,7 @@ ggplot(all.materials.total)+
   scale_y_continuous(name="Infection Risk",trans="log10")+
   theme(legend.position = "none")+
   coord_flip()+
-  facet_wrap(RNAinfect~duration,ncol=2,scales="free")
+  facet_wrap(RNAinfect~duration,ncol=2)
 
 #summary statistics ----------------------------------------------------------------
 
