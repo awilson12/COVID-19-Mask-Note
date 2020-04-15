@@ -52,13 +52,13 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5713,sd=.1055)
     
   }else if (material=="antimicrobial pillowcase"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6562,sd=.0764)
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0764)
     
   }else if (material=="surgical mask"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0744)
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8952,sd=.0265)
     
   }else if (material=="vacuum cleaner bag"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8952,sd=.0265)
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8595,sd=.0155)
     
   }else if (material=="cotton mix"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.7024,sd=.0008)
