@@ -37,7 +37,7 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
   conc.2<-runif(looplength,min=927,max=2000)*RNAinfective
   
   #inhalation (original values in m^3/day... converted to per minute)
-  inhalation<-runif(looplength,min=5.92,max=28.81)/(24*30) #minimum= (5th percentile), max (99th percentile)
+  inhalation<-runif(looplength,min=5.92,max=28.81)/(24*60) #minimum= (5th percentile), max (99th percentile)
   #for men and women, normal and obese, Table 6-6
   
   #efficacies from Davies et al. (2013) MS2 values
