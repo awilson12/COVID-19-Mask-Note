@@ -13,8 +13,8 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
 
 #function requires definition of material type and exposure duration in minutes
-COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
-                               "surgical mask","vacuum cleaner bag","cotton mix","linen","silk"),
+COVIDmask<-function(material=c("no mask","100% cotton","scarf","tea towel","pillowcase","antimicrobial pillowcase",
+                               "surgical mask","vacuum cleaner bag","cotton mix","linen","silk","FFP2","FFP3"),
                     exposureduration,
                     RNAinfective){
   
@@ -71,8 +71,16 @@ COVIDmask<-function(material=c("none","100% cotton","scarf","tea towel","pillowc
     
   }else if (material=="silk"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5432,sd=.2949)
-  }else{
+    
+  }else if (material=="FFP2"){
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.95,sd=.00275)
+    
+  }else if (material=="FFP3"){
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.99,sd=.00011)
+    
+  }else{ #no mask
     reduce<-rep(0,looplength)
+    
   }
   
   dose.1<-conc.1*inhalation*exposureduration*(1-reduce)
@@ -123,6 +131,14 @@ durationandRNA<-function(exposureduration,RNAinfective){
   #pillowcase
   COVIDmask(material="pillowcase",exposureduration=exposureduration,RNAinfective=RNAinfective)
   all.pillowcase<-all.param
+  
+  #tea towel
+  COVIDmask(material="tea towel",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.teatowel<-all.param
+  
+  #silk
+  COVIDmask(material="silk",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.silk<-all.param
 
   #vacuum cleaner bag
   COVIDmask(material="vacuum cleaner bag",exposureduration=exposureduration,RNAinfective=RNAinfective)
@@ -131,18 +147,18 @@ durationandRNA<-function(exposureduration,RNAinfective){
   #surgical mask
   COVIDmask(material="surgical mask",exposureduration=exposureduration,RNAinfective=RNAinfective)
   all.surgicalmask<-all.param
-
-  #tea towel
-  COVIDmask(material="tea towel",exposureduration=exposureduration,RNAinfective=RNAinfective)
-  all.teatowel<-all.param
   
-  #silk
-  COVIDmask(material="silk",exposureduration=exposureduration,RNAinfective=RNAinfective)
-  all.silk<-all.param
+  #FFP2
+  COVIDmask(material="FFP2",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.FFP2<-all.param
+  
+  #FFP3
+  COVIDmask(material="FFP3",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.FFP3<-all.param
   
   #none
-  COVIDmask(material="none",exposureduration=exposureduration,RNAinfective=RNAinfective)
-  all.none<-all.param
+  COVIDmask(material="no mask",exposureduration=exposureduration,RNAinfective=RNAinfective)
+  all.nomask<-all.param
   
   #bind all scenarios into single data frame
   all.materials<<-rbind(all.scarf,
@@ -151,11 +167,13 @@ durationandRNA<-function(exposureduration,RNAinfective){
                        all.cottonmix,
                        all.antimicrobepillowcase,
                        all.pillowcase,
-                       all.vacuum,
-                       all.surgicalmask,
                        all.teatowel,
                        all.silk,
-                       all.none
+                       all.vacuum,
+                       all.surgicalmask,
+                       all.FFP2,
+                       all.FFP3,
+                       all.nomask
   )
   
 }
@@ -181,9 +199,9 @@ all.materials.total$duration<-as.character(all.materials.total$duration)
 all.materials.total$duration[all.materials.total$duration==.5]<-"30 Seconds"
 all.materials.total$duration[all.materials.total$duration==20]<-"20 Minutes"
 
-all.materials.total$RNAinfect[all.materials.total$RNAinfect==.001]<-"0.1% Infective"
-all.materials.total$RNAinfect[all.materials.total$RNAinfect==.01]<-"1% Infective"
-all.materials.total$RNAinfect[all.materials.total$RNAinfect==.1]<-"10% Infective"
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.001]<-"0.1% aerosols infective"
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.01]<-"1% aerosols infective"
+all.materials.total$RNAinfect[all.materials.total$RNAinfect==.1]<-"10% aerosols infective"
 
 
 #figure 1 --------------------------------------------------------------------------------------------------------------------------------
@@ -202,11 +220,11 @@ ggplot(all.materials.total)+
 
 #summary statistics ----------------------------------------------------------------
 
-materials<-c("none","silk","tea towel","surgical mask","vacuum cleaner bag","pillowcase",
+materials<-c("no mask","surgical mask","FFP2","FFP3","vacuum cleaner bag","silk","tea towel","pillowcase",
              "antimicrobial pillowcase", "cotton mix", "100% cotton T-shirt","linen","scarf")
 
-none.mean.20min<-mean(all.materials.total$infect[all.materials.total$materialtype=="none" & all.materials.total$duration=="20 Minutes"])
-none.mean.30sec<-mean(all.materials.total$infect[all.materials.total$materialtype=="none" & all.materials.total$duration=="30 Seconds"])
+none.mean.20min<-mean(all.materials.total$infect[all.materials.total$materialtype=="no mask" & all.materials.total$duration=="20 Minutes"])
+none.mean.30sec<-mean(all.materials.total$infect[all.materials.total$materialtype=="no mask" & all.materials.total$duration=="30 Seconds"])
 
 matrix.reduce<-matrix(ncol=length(materials),nrow=length(exposuretimes))
 colnames(matrix.reduce)<-materials
