@@ -1,4 +1,5 @@
-#Code for estimating infection risks for different mask materials
+
+#summary statistics ----------#Code for estimating infection risks for different mask materials
 
 #clear environemnt
 rm(list = ls())
@@ -40,44 +41,47 @@ COVIDmask<-function(material=c("no mask","100% cotton","scarf","tea towel","pill
   inhalation<-runif(looplength,min=5.92,max=28.81)/(24*60) #minimum= (5th percentile), max (99th percentile)
   #for men and women, normal and obese, Table 6-6
   
-  #efficacies from Davies et al. (2013) MS2 values
+  #efficacies from Davies et al. (2013) MS2 values for
+  #non-traditional and surgical mask materials
   
-  if (material=="100% cotton T-shirt"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5085,sd=.1681)
+  #SD for FFP2 and FFP3 from Rengasamy et al. (2009)
   
-  }else if (material=="scarf"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.4887,sd=.1977)
-    
+  if (material=="FFP3"){
+  reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.99,sd=.00011)
+  
+  }else if (material=="FFP2"){
+  reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.95,sd=.00275)
+
+  }else if (material=="surgical mask"){
+  reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8952,sd=.0265)
+  
+  }else if (material=="vacuum cleaner bag"){
+   reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8595,sd=.0155)
+   
   }else if (material=="tea towel"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.7246,sd=.2260)
-    
-  }else if (material=="pillowcase"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5713,sd=.1055)
-    
-  }else if (material=="antimicrobial pillowcase"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0744)
-    
-  }else if (material=="surgical mask"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8952,sd=.0265)
-    
-  }else if (material=="vacuum cleaner bag"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.8595,sd=.0155)
     
   }else if (material=="cotton mix"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.7024,sd=.0008)
     
+  }else if (material=="antimicrobial pillowcase"){
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6890,sd=.0744)
+    
   }else if (material=="linen"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.6167,sd=.0241)
     
+  }else if (material=="pillowcase"){
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5713,sd=.1055)
+  
   }else if (material=="silk"){
     reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5432,sd=.2949)
     
-  }else if (material=="FFP2"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.95,sd=.00275)
-    
-  }else if (material=="FFP3"){
-    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.99,sd=.00011)
-    
+  }else if (material=="100% cotton T-shirt"){
+      reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.5085,sd=.1681)
+      
+  }else if (material=="scarf"){
+    reduce<-rtrunc(looplength,"norm",a=0,b=1,mean=.4887,sd=.1977)
+
   }else{ #no mask
     reduce<-rep(0,looplength)
     
@@ -108,11 +112,11 @@ COVIDmask<-function(material=c("no mask","100% cotton","scarf","tea towel","pill
 #--------------- function for running simulation scenarios per material type -----------------------------------------
 
 durationandRNA<-function(exposureduration,RNAinfective){
-  #scarf - 30 seconds and 15 minute exposure scenarios
+  #scarf 
   COVIDmask(material="scarf",exposureduration=exposureduration,RNAinfective=RNAinfective)
   all.scarf<-all.param
 
-  #linen - 30 seconds and 15 minute exposure scenarios
+  #linen 
   COVIDmask(material="linen",exposureduration=exposureduration,RNAinfective=RNAinfective)
   all.linen<-all.param
   
@@ -161,19 +165,19 @@ durationandRNA<-function(exposureduration,RNAinfective){
   all.nomask<-all.param
   
   #bind all scenarios into single data frame
-  all.materials<<-rbind(all.scarf,
-                       all.linen,
+  all.materials<<-rbind(all.nomask,
+                       all.scarf,
                        all.tshirt,
-                       all.cottonmix,
-                       all.antimicrobepillowcase,
-                       all.pillowcase,
-                       all.teatowel,
                        all.silk,
+                       all.pillowcase,
+                       all.linen,
+                       all.antimicrobepillowcase,
+                       all.cottonmix,
+                       all.teatowel,
                        all.vacuum,
                        all.surgicalmask,
                        all.FFP2,
-                       all.FFP3,
-                       all.nomask
+                       all.FFP3
   )
   
 }
@@ -217,11 +221,11 @@ ggplot(all.materials.total)+
   theme(legend.position = "none")+
   coord_flip()+
   facet_wrap(RNAinfect~duration,ncol=2)
+------------------------------------------------------
 
-#summary statistics ----------------------------------------------------------------
-
-materials<-c("no mask","surgical mask","FFP2","FFP3","vacuum cleaner bag","silk","tea towel","pillowcase",
-             "antimicrobial pillowcase", "cotton mix", "100% cotton T-shirt","linen","scarf")
+materials<-c("FFP3","FFP2","surgical mask","vacuum cleaner bag","tea towel","cotton mix",
+             "antimicrobial pillowcase","linen","pillowcase","silk","100% cotton T-shirt",
+             "scarf","no mask")
 
 none.mean.20min<-mean(all.materials.total$infect[all.materials.total$materialtype=="no mask" & all.materials.total$duration=="20 Minutes"])
 none.mean.30sec<-mean(all.materials.total$infect[all.materials.total$materialtype=="no mask" & all.materials.total$duration=="30 Seconds"])
